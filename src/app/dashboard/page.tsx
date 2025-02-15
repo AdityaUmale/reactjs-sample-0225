@@ -12,8 +12,12 @@ function DashboardContent() {
       <Navbar />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
         {taskLists.map(list => (
-          <TaskList key={list.id} title={list.title} />
-        ))}
+          <TaskList 
+            key={list._id} 
+            id={list._id}
+            title={list.title} 
+          />
+      ))}
       </div>
       <FloatingAddButton />
     </main>

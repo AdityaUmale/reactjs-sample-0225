@@ -1,14 +1,23 @@
 "use client"
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface TaskList {
-  id: string;
+  _id: string;
   title: string;
+  tasks: Task[];
+}
+
+interface Task {
+  _id: string;
+  title: string;
+  details?: string;
+  date?: string;
+  completed: boolean;
 }
 
 interface TaskListsContextType {
   taskLists: TaskList[];
-  addTaskList: (title: string) => void;
+  addTaskList: (title: string) => Promise<void>;
   isListModalOpen: boolean;
   openListModal: () => void;
   closeListModal: () => void;
@@ -17,15 +26,35 @@ interface TaskListsContextType {
 const TaskListsContext = createContext<TaskListsContextType | undefined>(undefined);
 
 export function TaskListsProvider({ children }: { children: ReactNode }) {
-  const [taskLists, setTaskLists] = useState<TaskList[]>([{ id: '1', title: 'My Tasks' }]);
+  const [taskLists, setTaskLists] = useState<TaskList[]>([]);
   const [isListModalOpen, setIsListModalOpen] = useState(false);
 
-  const addTaskList = (title: string) => {
-    const newList = {
-      id: Date.now().toString(),
-      title
-    };
-    setTaskLists([...taskLists, newList]);
+  useEffect(() => {
+    fetchTaskLists();
+  }, []);
+
+  const fetchTaskLists = async () => {
+    try {
+      const response = await fetch('/api/tasklists');
+      const data = await response.json();
+      setTaskLists(data);
+    } catch (error) {
+      console.error('Error fetching task lists:', error);
+    }
+  };
+
+  const addTaskList = async (title: string) => {
+    try {
+      const response = await fetch('/api/tasklists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+      });
+      const newList = await response.json();
+      setTaskLists([...taskLists, newList]);
+    } catch (error) {
+      console.error('Error adding task list:', error);
+    }
   };
 
   const openListModal = () => setIsListModalOpen(true);

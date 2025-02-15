@@ -1,46 +1,85 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TaskModal from './TaskModal';
 
 interface Task {
-  id: string;
+  _id: string;  // Change from 'id' to '_id' to match MongoDB
   title: string;
   details?: string;
-  date?: string;
+  date?: string | Date;  // Update to handle both string and Date types
 }
 
 // Add title prop to interface
 interface TaskListProps {
   title: string;
+  id: string;
 }
 
-export default function TaskList({ title }: TaskListProps) {
+export default function TaskList({ title, id }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
     
-    const newTask = {
-      id: Date.now().toString(),
-      title: newTaskTitle
-    };
-    setTasks([...tasks, newTask]);
-    setNewTaskTitle('');
-  };
-
-  const handleEditTask = (title: string, details?: string, date?: string) => {
-    if (editingTask) {
-      setTasks(tasks.map(task => 
-        task.id === editingTask.id 
-          ? { ...task, title, details, date }
-          : task
-      ));
-      setEditingTask(null);
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTaskTitle,
+          listId: id
+        })
+      });
+      
+      const newTask = await response.json();
+      setTasks([...tasks, newTask]);
+      setNewTaskTitle('');
+    } catch (error) {
+      console.error('Error adding task:', error);
     }
   };
+
+  const handleEditTask = async (title: string, details?: string, date?: string) => {
+    if (!editingTask) return;
+
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingTask._id,
+          title,
+          details,
+          date
+        })
+      });
+
+      const updatedTask = await response.json();
+      setTasks(tasks.map(task => 
+        task._id === editingTask._id ? updatedTask : task
+      ));
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`/api/tasks?listId=${id}`);
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, [id]);
 
   const openEditModal = (task: Task) => {
     setEditingTask(task);
@@ -79,7 +118,7 @@ export default function TaskList({ title }: TaskListProps) {
 
       <div className="space-y-4">
         {tasks.map(task => (
-          <div key={task.id} className="flex items-center justify-between">
+          <div key={task._id} className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"

@@ -5,13 +5,24 @@ interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (title: string, details?: string, date?: string) => void;
-  task?: { title: string; details?: string; date?: string };
+  task?: { title: string; details?: string; date?: string | Date };
 }
 
 export default function TaskModal({ isOpen, onClose, onSave, task }: TaskModalProps) {
   const [title, setTitle] = useState(task?.title || '');
   const [details, setDetails] = useState(task?.details || '');
-  const [date, setDate] = useState(task?.date || '');
+  const [date, setDate] = useState('');
+
+  useEffect(() => {
+    if (task?.date) {
+      // Convert to YYYY-MM-DD format for input[type="date"]
+      const dateObj = new Date(task.date);
+      setDate(dateObj.toISOString().split('T')[0]);
+    } else {
+      setDate('');
+    }
+  }, [task]);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Update state when task changes
