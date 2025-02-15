@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';  
+import { useRouter } from 'next/navigation';
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -34,11 +33,12 @@ export default function SignUpForm() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Store token in localStorage
+      // Store token in both localStorage and cookie
       localStorage.setItem('token', data.token);
+      document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}`;
       
       router.push('/dashboard');
-      router.refresh(); // Refresh the current route
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
