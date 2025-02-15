@@ -1,8 +1,8 @@
-// components/auth/SignUpForm.tsx
+
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';  // Changed from 'next/router'
+import { useRouter } from 'next/navigation';  
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -37,7 +37,6 @@ export default function SignUpForm() {
       // Store token in localStorage
       localStorage.setItem('token', data.token);
       
-      // Use router.push for navigation
       router.push('/dashboard');
       router.refresh(); // Refresh the current route
     } catch (err) {

@@ -1,8 +1,8 @@
-// components/auth/SignInForm.tsx
+
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';  // Changed from 'next/router'
+import { useRouter } from 'next/navigation';  
 
 export default function SignInForm() {
   const router = useRouter();
@@ -36,7 +36,6 @@ export default function SignInForm() {
       // Store token in localStorage
       localStorage.setItem('token', data.token);
       
-      // Use router.push for navigation
       router.push('/dashboard');
       router.refresh(); // Refresh the current route
     } catch (err) {

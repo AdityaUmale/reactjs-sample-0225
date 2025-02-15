@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import TaskList from '@/models/TaskList';
-import '@/models/Task'; // Add this import to register the Task model
+import '@/models/Task'; 
 
 export async function GET() {
   try {

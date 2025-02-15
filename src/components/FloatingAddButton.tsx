@@ -7,7 +7,8 @@ export default function FloatingAddButton() {
 
   return (
     <>
-      <button 
+      <button
+        title="Add new list"
         onClick={openListModal}
         className="fixed bottom-6 right-6 w-14 h-14 bg-[#2B4172] rounded-full flex items-center justify-center shadow-lg hover:bg-[#3a5491] transition-colors"
       >

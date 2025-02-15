@@ -35,6 +35,7 @@ export default function ListModal({ isOpen, onClose, onSave }: ListModalProps) {
             />
           </div>
           <button
+            title="Add new list"
             onClick={handleSave}
             className="bg-[#2B4172] text-white rounded-full p-2 hover:bg-[#3a5491]"
           >

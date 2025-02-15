@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 import TaskModal from './TaskModal';
 
 interface Task {
-  _id: string;  // Change from 'id' to '_id' to match MongoDB
+  _id: string;  
   title: string;
   details?: string;
-  date?: string | Date;  // Update to handle both string and Date types
-  completed?: boolean;  // Add completed field
+  date?: string | Date;  
+  completed?: boolean;  
 }
 
-// Add title prop to interface
+
 interface TaskListProps {
   title: string;
   id: string;
@@ -18,7 +18,7 @@ interface TaskListProps {
 
 export default function TaskList({ title, id }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);  // Add this state
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);  
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -114,6 +114,24 @@ export default function TaskList({ title, id }: TaskListProps) {
     setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
   };
 
+  const handleDeleteTask = async () => {
+    if (!editingTask) return;
+
+    try {
+      const response = await fetch(`/api/tasks/${editingTask._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setTasks(tasks.filter(task => task._id !== editingTask._id));
+        setIsModalOpen(false);
+        setEditingTask(null);
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
@@ -135,6 +153,7 @@ export default function TaskList({ title, id }: TaskListProps) {
           className="text-gray-400 text-lg focus:outline-none flex-grow"
         />
         <button
+          title="Add new task"
           onClick={handleAddTask}
           className="bg-[#2B4172] text-white rounded-full p-2 hover:bg-[#3a5491]"
         >
@@ -228,6 +247,7 @@ export default function TaskList({ title, id }: TaskListProps) {
           setEditingTask(null);
         }}
         onSave={handleEditTask}
+        onDelete={editingTask ? handleDeleteTask : undefined}
         task={editingTask || undefined}
       />
     </div>
