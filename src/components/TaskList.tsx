@@ -7,6 +7,7 @@ interface Task {
   title: string;
   details?: string;
   date?: string | Date;  // Update to handle both string and Date types
+  completed?: boolean;  // Add completed field
 }
 
 // Add title prop to interface
@@ -86,6 +87,27 @@ export default function TaskList({ title, id }: TaskListProps) {
     setIsModalOpen(true);
   };
 
+  const handleToggleComplete = async (task: Task) => {
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: task._id,
+          title: task.title,
+          details: task.details,
+          date: task.date,
+          completed: !task.completed
+        })
+      });
+
+      const updatedTask = await response.json();
+      setTasks(tasks.map(t => t._id === task._id ? updatedTask : t));
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
@@ -117,14 +139,41 @@ export default function TaskList({ title, id }: TaskListProps) {
       </div>
 
       <div className="space-y-4">
+        {/* Show completed tasks count if any */}
+        {tasks.filter(task => task.completed).length > 0 && (
+          <div className="text-green-600 font-medium">
+            Completed ({tasks.filter(task => task.completed).length})
+          </div>
+        )}
+
         {tasks.map(task => (
           <div key={task._id} className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                className="w-6 h-6 rounded-full border-2 border-gray-300"
-              />
-              <span className="text-lg text-gray-700">{task.title}</span>
+              <button
+                onClick={() => handleToggleComplete(task)}
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center
+                  ${task.completed 
+                    ? 'border-green-500 bg-green-500' 
+                    : 'border-gray-300'}`}
+              >
+                {task.completed && (
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-4 w-4 text-white" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                )}
+              </button>
+              <span className={`text-lg ${task.completed ? 'text-green-600' : 'text-gray-700'}`}>
+                {task.title}
+              </span>
             </div>
             <button 
               className="text-gray-400" 
