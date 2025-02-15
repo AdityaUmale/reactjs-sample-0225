@@ -18,6 +18,8 @@ interface TaskListProps {
 
 export default function TaskList({ title, id }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);  // Add this state
+
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,6 +110,10 @@ export default function TaskList({ title, id }: TaskListProps) {
     }
   };
 
+  const toggleTaskExpand = (taskId: string) => {
+    setExpandedTaskId(expandedTaskId === taskId ? null : taskId);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
@@ -139,7 +145,6 @@ export default function TaskList({ title, id }: TaskListProps) {
       </div>
 
       <div className="space-y-4">
-        {/* Show completed tasks count if any */}
         {tasks.filter(task => task.completed).length > 0 && (
           <div className="text-green-600 font-medium">
             Completed ({tasks.filter(task => task.completed).length})
@@ -147,43 +152,71 @@ export default function TaskList({ title, id }: TaskListProps) {
         )}
 
         {tasks.map(task => (
-          <div key={task._id} className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => handleToggleComplete(task)}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center
-                  ${task.completed 
-                    ? 'border-green-500 bg-green-500' 
-                    : 'border-gray-300'}`}
+          <div key={task._id} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div 
+                className="flex items-center space-x-3 flex-grow cursor-pointer"
+                onClick={() => toggleTaskExpand(task._id)}
               >
-                {task.completed && (
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-4 w-4 text-white" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                  >
-                    <path 
-                      fillRule="evenodd" 
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
-                      clipRule="evenodd" 
-                    />
-                  </svg>
-                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleComplete(task);
+                  }}
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center
+                    ${task.completed ? 'border-green-500 bg-green-500' : 'border-gray-300'}`}
+                >
+                  {task.completed && (
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 text-white" 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor"
+                    >
+                      <path 
+                        fillRule="evenodd" 
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                        clipRule="evenodd" 
+                      />
+                    </svg>
+                  )}
+                </button>
+                <span className={`text-lg ${task.completed ? 'text-green-600' : 'text-gray-700'}`}>
+                  {task.title}
+                </span>
+              </div>
+              <button 
+                className="text-gray-400" 
+                title="Edit task"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEditModal(task);
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
               </button>
-              <span className={`text-lg ${task.completed ? 'text-green-600' : 'text-gray-700'}`}>
-                {task.title}
-              </span>
             </div>
-            <button 
-              className="text-gray-400" 
-              title="Edit task"
-              onClick={() => openEditModal(task)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
+
+            {expandedTaskId === task._id && (task.details || task.date) && (
+              <div className="ml-9 space-y-2">
+                {task.details && (
+                  <p className="text-gray-600 text-sm">
+                    {task.details}
+                  </p>
+                )}
+                {task.date && (
+                  <div className="bg-blue-50 text-blue-600 text-sm py-1 px-3 rounded-md inline-block">
+                    {new Date(task.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
